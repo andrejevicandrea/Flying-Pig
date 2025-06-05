@@ -64,10 +64,35 @@ void settings(const sf::Vector2i& localPosition, std::unordered_map<std::string,
                     it->second.CenterText();
                 }   
             }
+            else if (it->first == "sliderLine") {
+                //sf::Vector2f size = buttonsSettingsMenu["slider"].GetSize();
+                //buttonsSettingsMenu["slider"].SetPosition((sf::Vector2f) localPosition - size / 2.0f);
+                if (buttonsSettingsMenu.find("slider") != buttonsSettingsMenu.end()) {
+                    Button& sliderButton = buttonsSettingsMenu.at("slider");
+                    sf::Vector2f size = sliderButton.GetSize();
+                    sliderButton.SetPosition((sf::Vector2f)localPosition - size / 2.0f);
+                }
+            }
            
         }
     }
     
+}
+
+bool exit(const sf::Vector2i& localPosition, const std::vector<Button>& buttonsExit) {
+    for (Button button : buttonsExit) {
+        if (checkButton(button, localPosition)) {
+            std::string text = button.GetText();
+            if (text == "No") {
+                windowName = Menu;
+                return false;
+            }
+            else if (text == "Yes") {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 std::vector<Button> setUpMainMenu(const sf::Font& font) {
@@ -107,7 +132,7 @@ std::unordered_map<std::string, Button> setUpSettingsMenu(const sf::Font& font) 
     sf::FloatRect volumeBounds = volume.getLocalBounds();
     positionX = volume.getPosition().x + volumeBounds.size.x + 30.0f;
     positionY = volume.getPosition().y + (volumeBounds.size.y) / 2.0f;
-    Button sliderLine(sf::Vector2f(positionX, positionY), sf::Vector2f(130.0f, 3.0f), emptyText);
+    Button sliderLine(sf::Vector2f(positionX, positionY), sf::Vector2f(130.0f, 5.0f), emptyText);
     Button slider(sf::Vector2f(positionX, positionY - 15.0f), sf::Vector2f(10.0f, 30.0f), emptyText);
 
     buttons.insert(std::pair("sliderLine", sliderLine));
@@ -124,6 +149,21 @@ std::unordered_map<std::string, Button> setUpSettingsMenu(const sf::Font& font) 
 
 }
 
+std::vector<Button> setUpExit(const sf::Font& font) {
+    std::vector<Button> buttons;
+    sf::Text text(font, "Are you sure?");
+    Button areYouSure(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200.0f, 100.0f), text);
+    text.setString("Yes");
+    Button yesButton(sf::Vector2f(300.0f + 40.0f, 370.0f), sf::Vector2f(50.0f, 50.0f), text);
+    text.setString("No");
+    Button noButton(sf::Vector2f(300.0f + 110.0f, 370.0f), sf::Vector2f(50.0f, 50.0f), text);
+
+    buttons.push_back(areYouSure);
+    buttons.push_back(yesButton);
+    buttons.push_back(noButton);
+    return buttons;
+}
+
 
 int main()
 {
@@ -132,14 +172,20 @@ int main()
     window.setPosition(sf::Vector2i(600 + 1920, 100));
     sf::CircleShape shape(100.f);
     shape.setFillColor(sf::Color::Green);
+
     sf::Font font;
     if (!font.openFromFile("Anton-Regular.ttf")) {
         return -1;
     }
+
     std::vector<Button> buttonsMainMenu;
     std::unordered_map<std::string, Button> buttonsSettingsMenu;
+    std::vector<Button> buttonsExit;
+    bool closeIf;
     buttonsMainMenu = setUpMainMenu(font);
     buttonsSettingsMenu = setUpSettingsMenu(font);
+    buttonsExit = setUpExit(font);
+
     sf::Texture texture;
     if (!texture.loadFromFile("slika.jpg")) {
         return -1;
@@ -176,7 +222,12 @@ int main()
 
             }
             if (windowName == Exit) {
-                window.close();
+                if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonReleased>()) {
+                    if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
+                        sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+                        closeIf = exit(localPosition, buttonsExit);
+                    }
+                }
             }
 
         }
@@ -208,6 +259,15 @@ int main()
                 //std::cout << ((Button)pair.second).GetText() << "\n";
             }
 
+        }
+        else if (windowName == Exit) {
+            window.clear();
+            for (Button button : buttonsExit) {
+                button.Draw(window);
+            }
+            if (closeIf) {
+                window.close();
+            }
         }
         window.display();
 
