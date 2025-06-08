@@ -2,6 +2,8 @@
 #include "Button.h"
 #include <vector>
 #include <unordered_map>
+#include "Animation.h"
+#include "Player.h"
 
 enum WindowNames {
     Menu = 0, //show start, settings and exit buttons
@@ -186,14 +188,23 @@ int main()
     buttonsSettingsMenu = setUpSettingsMenu(font);
     buttonsExit = setUpExit(font);
 
-    sf::Texture texture;
-    if (!texture.loadFromFile("slika.jpg")) {
+    sf::Texture playerTexture;
+    if (!playerTexture.loadFromFile("pigScale.jpg")) {
         return -1;
     }
-    sf::Sprite sprite(texture);
+   sf::Sprite sprite(playerTexture);
+   
+   Player player(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(0.0f, 300.0f - 50.0f));
+   
+
+   float deltaTime = 0.0f;
+   sf::Clock clock;
+    
 
     while (window.isOpen())
     {
+        deltaTime = clock.restart().asSeconds();
+
         while (const auto event = window.pollEvent())
         {
             if (event->is<sf::Event::Closed>())
@@ -240,7 +251,9 @@ int main()
         }
         else if (windowName == Start) {
             window.clear();
-            window.draw(sprite);
+            //window.draw(sprite);
+            player.Update(deltaTime, 0);
+            player.Draw(window);
 
         }
         else if (windowName == Settings) {
