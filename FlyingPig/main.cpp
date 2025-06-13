@@ -4,6 +4,8 @@
 #include <unordered_map>
 #include "Animation.h"
 #include "Player.h"
+#include "Collider.h"
+#include "Pipe.h"
 
 enum WindowNames {
     Menu = 0, //show start, settings and exit buttons
@@ -172,8 +174,7 @@ int main()
 
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(800, 600)), "Flying Pig", sf::Style::Resize | sf::Style::Close, sf::State::Windowed);
     window.setPosition(sf::Vector2i(600 + 1920, 100));
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    
 
     sf::Font font;
     if (!font.openFromFile("Anton-Regular.ttf")) {
@@ -194,11 +195,17 @@ int main()
     }
    sf::Sprite sprite(playerTexture);
    
-   Player player(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(0.0f, 300.0f - 50.0f));
-   
+   Player player(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(100.0f, 300.0f - 50.0f),100.0f);
+   sf::Text instruction(font, "Press SPACE to start",20U);
+   instruction.setPosition(sf::Vector2f(75, 200));
+
+   Pipe testPipe(sf::Vector2f(100.0f, 200.0f), sf::Vector2f(100.0f, 200.0f),100.0f);
+
 
    float deltaTime = 0.0f;
    sf::Clock clock;
+
+   bool gameStarted = false;
     
 
     while (window.isOpen())
@@ -218,6 +225,19 @@ int main()
                         menu(localPosition, buttonsMainMenu);
 
                     }
+                }
+
+            }
+            if (windowName == Start) {
+                if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
+                    if (keyReleased->code == sf::Keyboard::Key::Space) {
+                        gameStarted = true;
+                        player.SetStartVelocity();
+                        
+                    
+                    }
+
+                    
                 }
 
             }
@@ -251,8 +271,14 @@ int main()
         }
         else if (windowName == Start) {
             window.clear();
-            //window.draw(sprite);
-            player.Update(deltaTime, 0);
+            player.Update(deltaTime, 0, gameStarted);
+            if (!gameStarted) {
+                window.draw(instruction);
+
+            }
+        
+            testPipe.Update(deltaTime);
+            testPipe.Draw(window);
             player.Draw(window);
 
         }
