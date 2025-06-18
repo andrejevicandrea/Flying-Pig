@@ -2,10 +2,10 @@
 
 Pipe::Pipe(const sf::Vector2f& sizeTop, const sf::Vector2f& sizeBottom,float speed)
 {
-	this->bodyTop.setSize(sizeTop);
+ 	this->bodyTop.setSize(sizeTop);
 	this->bodyBottom.setSize(sizeBottom);
-	this->bodyTop.setPosition(sf::Vector2f(800.0f - sizeTop.x, 0.0f));
-	this->bodyBottom.setPosition(sf::Vector2f(800.0f - sizeBottom.x,600.0f - sizeBottom.y));
+	this->bodyTop.setPosition(sf::Vector2f(800.0f, 0.0f));
+	this->bodyBottom.setPosition(sf::Vector2f(800.0f,600.0f - sizeBottom.y));
 	this->speed = speed;
 }
 
@@ -25,5 +25,16 @@ void Pipe::Draw(sf::RenderWindow& window)
 {
 	window.draw(bodyTop);
 	window.draw(bodyBottom);
+}
+
+void Pipe::setBodyTopStartingPosition()
+{
+	bodyTop.setPosition(sf::Vector2f(800.0f, 0.0f));
+}
+
+void Pipe::setBodyBottomStartingPosition(const sf::Vector2f& sizeBottom)
+{
+	
+	bodyBottom.setPosition(sf::Vector2f(800.0f, 600.0f - sizeBottom.y));
 }
 

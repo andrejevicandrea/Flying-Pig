@@ -1,11 +1,13 @@
 #include <SFML/Graphics.hpp>
-#include "Button.h"
 #include <vector>
 #include <unordered_map>
+#include <random>
+#include "Button.h"
 #include "Animation.h"
 #include "Player.h"
 #include "Collider.h"
 #include "Pipe.h"
+#include "Game.h"
 
 enum WindowNames {
     Menu = 0, //show start, settings and exit buttons
@@ -99,6 +101,25 @@ bool exit(const sf::Vector2i& localPosition, const std::vector<Button>& buttonsE
     return false;
 }
 
+bool restart(const sf::Vector2i& localPosition, const std::vector<Button>& buttonsRestart, Game& game, sf::RenderWindow& window, float deltaTime, unsigned int row, bool& gameStarted) {
+    for (Button button : buttonsRestart) {
+        if (checkButton(button, localPosition)) {
+            std::string text = button.GetText();
+            if (text == "Restart") {
+                gameStarted = false;
+                game.RestartGame(window,deltaTime, row, gameStarted);
+                game.setEndGame(false);
+                windowName = Start;
+                return true;
+            }
+            else if (text == "Menu") {
+                windowName = Menu;
+                return false;
+            }
+        }
+    }
+}
+
 std::vector<Button> setUpMainMenu(const sf::Font& font) {
     sf::Text text(font, "Start");
     Button startButton(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200, 100), text);
@@ -168,6 +189,18 @@ std::vector<Button> setUpExit(const sf::Font& font) {
     return buttons;
 }
 
+std::vector<Button> setUpRestart(const sf::Font& font) {
+    std::vector<Button> buttons;
+    sf::Text text(font, "Restart");
+    Button restart(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200.0f, 100.0f), text);
+    text.setString("Menu");
+    Button menu(sf::Vector2f(300.0f, 351.0f), sf::Vector2f(200.0f, 100.0f), text);
+
+    buttons.push_back(restart);
+    buttons.push_back(menu);
+    return buttons;
+}
+
 
 int main()
 {
@@ -184,23 +217,34 @@ int main()
     std::vector<Button> buttonsMainMenu;
     std::unordered_map<std::string, Button> buttonsSettingsMenu;
     std::vector<Button> buttonsExit;
+    std::vector<Button> buttonsRestart;
     bool closeIf;
+    bool restartIf;
     buttonsMainMenu = setUpMainMenu(font);
     buttonsSettingsMenu = setUpSettingsMenu(font);
     buttonsExit = setUpExit(font);
+    buttonsRestart = setUpRestart(font);
 
     sf::Texture playerTexture;
-    if (!playerTexture.loadFromFile("pigScale.jpg")) {
+    if (!playerTexture.loadFromFile("pigScale.png")) {
         return -1;
     }
    sf::Sprite sprite(playerTexture);
    
-   Player player(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(100.0f, 300.0f - 50.0f),100.0f);
+   //Player player(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(100.0f, 300.0f - 50.0f),100.0f);
    sf::Text instruction(font, "Press SPACE to start",20U);
    instruction.setPosition(sf::Vector2f(75, 200));
 
-   Pipe testPipe(sf::Vector2f(100.0f, 200.0f), sf::Vector2f(100.0f, 200.0f),100.0f);
+   //Pipe testPipe(sf::Vector2f(100.0f, 200.0f), sf::Vector2f(100.0f, 200.0f),100.0f);
+   std::random_device rd;
+   std::mt19937 gen(rd());
+   std::uniform_real_distribution<float> height(100.0f, 300.0f);
+   float random = height(gen);
 
+   float tmp = 600.0f - SPACEHEIGHT - random;
+
+   Game game(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(100.0f, 300.0f - 50.0f), 50.0f,
+       sf::Vector2f(100.0f, random), sf::Vector2f(100.0f, tmp), 100.0f, false);
 
    float deltaTime = 0.0f;
    sf::Clock clock;
@@ -232,12 +276,19 @@ int main()
                 if (const auto* keyReleased = event->getIf<sf::Event::KeyReleased>()) {
                     if (keyReleased->code == sf::Keyboard::Key::Space) {
                         gameStarted = true;
-                        player.SetStartVelocity();
-                        
-                    
-                    }
+                        //player.SetStartVelocity();
+                        game.SetPlayerVelocity();
 
+
+                    }
                     
+                }
+                if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonReleased>()) {
+                    if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
+                        sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+                        restartIf = restart(localPosition, buttonsRestart, game,window,deltaTime, 0, gameStarted);
+
+                    }
                 }
 
             }
@@ -271,16 +322,20 @@ int main()
         }
         else if (windowName == Start) {
             window.clear();
-            player.Update(deltaTime, 0, gameStarted);
+           
             if (!gameStarted) {
                 window.draw(instruction);
-
             }
-        
-            testPipe.Update(deltaTime);
-            testPipe.Draw(window);
-            player.Draw(window);
 
+            game.Update(window, deltaTime, 0, gameStarted);
+
+            if (game.getEndGame()) {
+                for (Button button : buttonsRestart) {
+                    button.Draw(window);
+                }
+                
+            }
+            
         }
         else if (windowName == Settings) {
 
