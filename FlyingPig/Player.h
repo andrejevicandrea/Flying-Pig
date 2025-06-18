@@ -13,6 +13,8 @@ public:
 	float GetVelocity() { return velocity; }
 	void SetStartVelocity() { this->velocity = velocityStart; }
 	void Update(float deltaTime, unsigned int row, bool gameStarted);
+	void SetStartingPosition();
+	sf::RectangleShape getBody() { return body; }
 	Collider makeCollider() { return Collider(this->body); }
 	
 

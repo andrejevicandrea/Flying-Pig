@@ -36,3 +36,9 @@ void Player::Update(float deltaTime, unsigned int row, bool gameStarted)
 	this->body.setTextureRect(animation.uvRect);
 
 }
+
+void Player::SetStartingPosition()
+{
+	sf::Vector2f startingPosition(100.0f, 300.0f - 50.0f);
+	body.setPosition(startingPosition);
+}
