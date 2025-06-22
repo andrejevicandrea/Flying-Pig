@@ -1,11 +1,14 @@
 #include "Game.h"
 
 Game::Game(sf::Texture* texture, sf::Vector2u imageCount, float switchTime, sf::Vector2f size, sf::Vector2f position, float maxJump, 
-	const sf::Vector2f& sizeTop, const sf::Vector2f& sizeBottom, float speed, bool endGame) : 
+	const sf::Vector2f& sizeTop, const sf::Vector2f& sizeBottom, float speed, sf::Texture* pipeTopTexture, sf::Texture* pipeBottomTexture,
+	bool endGame) :
 	player(texture, imageCount, switchTime, size, position, maxJump)
 {
 	this->endGame = endGame;
-	pipes.push_back(Pipe(sizeTop, sizeBottom, speed));
+	this->pipeTopTexture = pipeTopTexture;
+	this->pipeBottomTexture = pipeBottomTexture;
+	pipes.push_back(Pipe(sizeTop, sizeBottom, speed, pipeTopTexture, pipeBottomTexture));
 }
 
 void Game::Update(sf::RenderWindow& window,float deltaTime, unsigned int row, bool gameStarted)
@@ -30,17 +33,10 @@ void Game::Update(sf::RenderWindow& window,float deltaTime, unsigned int row, bo
 	}
 
 	if (pipes.back().getBodyTop().getPosition().x < 400.0f) {
-		std::random_device rd; 
-		std::mt19937 gen(rd()); 
-		std::uniform_real_distribution<float> height(100.0f, 300.0f);
-		float random = height(gen);
-
-		float tmp = 600.0f - SPACEHEIGHT - random;
-
-		Pipe newPipe(sf::Vector2f(100.0f, random), sf::Vector2f(100.0f, tmp), pipe.getSpeed());
-		pipes.push_back(newPipe);
-
 		
+		float speed = pipes.front().getSpeed();
+		Pipe newPipe = Pipe:: generatedPipe(speed, pipeTopTexture, pipeBottomTexture);
+		pipes.push_back(newPipe);
 		
 	}
 
