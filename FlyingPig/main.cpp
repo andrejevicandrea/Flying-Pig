@@ -18,7 +18,7 @@ enum WindowNames {
 
 WindowNames windowName = Menu;
 
-bool checkButton(const Button& button,const sf::Vector2i& localPosition) {
+bool checkButton(const Button& button,const sf::Vector2f& localPosition) {
     sf::Vector2f position = button.GetPosition();
     sf::Vector2f size = button.GetSize();
 
@@ -31,7 +31,7 @@ void start(const sf::RenderWindow& window) {
 
 }
 
-void menu(const sf::Vector2i& localPosition,const std::vector<Button>& buttons) {
+void menu(const sf::Vector2f& localPosition,const std::vector<Button>& buttons) {
 
     for (Button button : buttons) {
         if (checkButton(button, localPosition)) {
@@ -53,7 +53,7 @@ void menu(const sf::Vector2i& localPosition,const std::vector<Button>& buttons) 
 
 }
 
-void settings(const sf::Vector2i& localPosition, std::unordered_map<std::string, Button>& buttonsSettingsMenu) {
+void settings(const sf::Vector2f& localPosition, std::unordered_map<std::string, Button>& buttonsSettingsMenu) {
     for (auto it = buttonsSettingsMenu.begin(); it != buttonsSettingsMenu.end(); it++) {
         if (checkButton(it->second, localPosition)) {
             if (it->first == "backToMenu") {
@@ -85,7 +85,7 @@ void settings(const sf::Vector2i& localPosition, std::unordered_map<std::string,
     
 }
 
-bool exit(const sf::Vector2i& localPosition, const std::vector<Button>& buttonsExit) {
+bool exit(const sf::Vector2f& localPosition, const std::vector<Button>& buttonsExit) {
     for (Button button : buttonsExit) {
         if (checkButton(button, localPosition)) {
             std::string text = button.GetText();
@@ -101,7 +101,7 @@ bool exit(const sf::Vector2i& localPosition, const std::vector<Button>& buttonsE
     return false;
 }
 
-bool restart(const sf::Vector2i& localPosition, const std::vector<Button>& buttonsRestart, Game& game, sf::RenderWindow& window, float deltaTime, unsigned int row, bool& gameStarted) {
+bool restart(const sf::Vector2f& localPosition, const std::vector<Button>& buttonsRestart, Game& game, sf::RenderWindow& window, float deltaTime, unsigned int row, bool& gameStarted) {
     for (Button button : buttonsRestart) {
         if (checkButton(button, localPosition)) {
             std::string text = button.GetText();
@@ -207,6 +207,8 @@ int main()
 
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(800, 600)), "Flying Pig", sf::Style::Resize | sf::Style::Close, sf::State::Windowed);
     window.setPosition(sf::Vector2i(600 + 1920, 100));
+    sf::FloatRect rect(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(800.0f, 600.0f));
+    sf::View view(rect);
     
 
     sf::Font font;
@@ -236,15 +238,36 @@ int main()
    instruction.setPosition(sf::Vector2f(75, 200));
 
    //Pipe testPipe(sf::Vector2f(100.0f, 200.0f), sf::Vector2f(100.0f, 200.0f),100.0f);
-   std::random_device rd;
-   std::mt19937 gen(rd());
-   std::uniform_real_distribution<float> height(100.0f, 300.0f);
-   float random = height(gen);
+   
+   sf::Texture pipeTopTexture;
+   if (!pipeTopTexture.loadFromFile("pipeTop.png")) {
+       return -1;
+   }
 
-   float tmp = 600.0f - SPACEHEIGHT - random;
+   sf::Texture pipeBottomTexture;
+   if (!pipeBottomTexture.loadFromFile("pipeBottom.png")) {
+       return -1;
+   }
+
+   sf::Texture gameBackground;
+   if (!gameBackground.loadFromFile("gameBackground2.png")) {
+       return -1;
+   }
+
+   sf::Sprite backgroundSprite(gameBackground);
+
+   sf::Texture menuBackground;
+   if (!menuBackground.loadFromFile("gameBackground.png")) {
+       return -1;
+   }
+
+   sf::Sprite menuBackgroundSprite(menuBackground);
+
+
+   Pipe newPipe = Pipe::generatedPipe(100.0f,&pipeTopTexture,&pipeBottomTexture);
 
    Game game(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(100.0f, 300.0f - 50.0f), 50.0f,
-       sf::Vector2f(100.0f, random), sf::Vector2f(100.0f, tmp), 100.0f, false);
+       newPipe.getBodyTop().getSize(), newPipe.getBodyBottom().getSize(), 100.0f, &pipeTopTexture, &pipeBottomTexture, false);
 
    float deltaTime = 0.0f;
    sf::Clock clock;
@@ -261,11 +284,30 @@ int main()
             if (event->is<sf::Event::Closed>())
                 window.close();
 
+            if (const auto* resizeEvent = event->getIf<sf::Event::Resized>()) {
+                float windowRatio = float(resizeEvent->size.x) / float(resizeEvent->size.y);
+                float viewRatio = 800.0f / 600.0f;
+                float sizeX = 1, sizeY = 1;
+                float posX = 0, posY = 0;
+
+                if (windowRatio > viewRatio) {
+                    sizeX = viewRatio / windowRatio;
+                    posX = (1 - sizeX) / 2.f;
+                }
+                else {
+                    sizeY = windowRatio / viewRatio;
+                    posY = (1 - sizeY) / 2.f;
+                }
+                view.setViewport(sf::FloatRect(sf::Vector2f(posX, posY), sf::Vector2f( sizeX, sizeY)));
+                window.setView(view);
+            }
+
             if (windowName == Menu) {
 
                 if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonReleased>()) {
                     if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                        sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+                        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+                        sf::Vector2f localPosition = window.mapPixelToCoords(pixelPos);
                         menu(localPosition, buttonsMainMenu);
 
                     }
@@ -285,7 +327,8 @@ int main()
                 }
                 if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonReleased>()) {
                     if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                        sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+                        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+                        sf::Vector2f localPosition = window.mapPixelToCoords(pixelPos);
                         restartIf = restart(localPosition, buttonsRestart, game,window,deltaTime, 0, gameStarted);
 
                     }
@@ -295,7 +338,8 @@ int main()
             if (windowName == Settings) {
                 if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonReleased>()) {
                     if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                        sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+                        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+                        sf::Vector2f localPosition = window.mapPixelToCoords(pixelPos);
                         settings(localPosition, buttonsSettingsMenu);
 
 
@@ -306,7 +350,8 @@ int main()
             if (windowName == Exit) {
                 if (const auto* mouseButtonPressed = event->getIf<sf::Event::MouseButtonReleased>()) {
                     if (mouseButtonPressed->button == sf::Mouse::Button::Left) {
-                        sf::Vector2i localPosition = sf::Mouse::getPosition(window);
+                        sf::Vector2i pixelPos = sf::Mouse::getPosition(window);
+                        sf::Vector2f localPosition = window.mapPixelToCoords(pixelPos);
                         closeIf = exit(localPosition, buttonsExit);
                     }
                 }
@@ -315,6 +360,7 @@ int main()
         }
         window.clear();
         if (windowName == Menu) {
+            window.draw(backgroundSprite);
             for (Button button : buttonsMainMenu) {
                 button.Draw(window);
             }
@@ -322,6 +368,9 @@ int main()
         }
         else if (windowName == Start) {
             window.clear();
+
+
+            window.draw(backgroundSprite);
            
             if (!gameStarted) {
                 window.draw(instruction);
