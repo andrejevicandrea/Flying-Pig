@@ -2,7 +2,7 @@
 #include <vector>
 #include <unordered_map>
 #include <random>
-#include "Button.h"
+//#include "Button.h"
 #include "Animation.h"
 #include "Player.h"
 #include "Collider.h"
@@ -120,13 +120,13 @@ bool restart(const sf::Vector2f& localPosition, const std::vector<Button>& butto
     }
 }
 
-std::vector<Button> setUpMainMenu(const sf::Font& font) {
+std::vector<Button> setUpMainMenu(const sf::Font& font, sf::Texture* buttonTexture) {
     sf::Text text(font, "Start");
-    Button startButton(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200, 100), text);
+    Button startButton(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200, 100), text, buttonTexture);
     text.setString("Settings");
-    Button settingsButton(sf::Vector2f(300.0f, 351.0f), sf::Vector2f(200, 100), text);
+    Button settingsButton(sf::Vector2f(300.0f, 351.0f), sf::Vector2f(200, 100), text, buttonTexture);
     text.setString("Exit");
-    Button exitButton(sf::Vector2f(300.0f, 452.0f), sf::Vector2f(200, 100), text);
+    Button exitButton(sf::Vector2f(300.0f, 452.0f), sf::Vector2f(200, 100), text, buttonTexture);
     std::vector<Button> buttons;
     buttons.push_back(startButton);
     buttons.push_back(settingsButton);
@@ -135,7 +135,7 @@ std::vector<Button> setUpMainMenu(const sf::Font& font) {
 
 }
 
-std::unordered_map<std::string, Button> setUpSettingsMenu(const sf::Font& font) {
+std::unordered_map<std::string, Button> setUpSettingsMenu(const sf::Font& font,sf::Texture* buttonTexture) {
     
     std::unordered_map<std::string, Button> buttons;
 
@@ -147,7 +147,7 @@ std::unordered_map<std::string, Button> setUpSettingsMenu(const sf::Font& font) 
     float positionX = music.getPosition().x + musicBounds.size.x + 30.0f;
     float positionY = music.getPosition().y + (musicBounds.size.y - 10.0f) / 2.0f;
     sf::Text emptyText(font, "", 20U);
-    Button checkBox(sf::Vector2f(positionX, positionY), sf::Vector2f(20.0f, 20.0f), emptyText);
+    Button checkBox(sf::Vector2f(positionX, positionY), sf::Vector2f(20.0f, 20.0f), emptyText, buttonTexture);
 
     buttons.insert(std:: pair("checkBox",checkBox));
 
@@ -157,16 +157,16 @@ std::unordered_map<std::string, Button> setUpSettingsMenu(const sf::Font& font) 
     sf::FloatRect volumeBounds = volume.getLocalBounds();
     positionX = volume.getPosition().x + volumeBounds.size.x + 30.0f;
     positionY = volume.getPosition().y + (volumeBounds.size.y) / 2.0f;
-    Button sliderLine(sf::Vector2f(positionX, positionY), sf::Vector2f(130.0f, 5.0f), emptyText);
-    Button slider(sf::Vector2f(positionX, positionY - 15.0f), sf::Vector2f(10.0f, 30.0f), emptyText);
+    Button sliderLine(sf::Vector2f(positionX, positionY), sf::Vector2f(130.0f, 5.0f), emptyText, buttonTexture);
+    Button slider(sf::Vector2f(positionX, positionY - 15.0f), sf::Vector2f(10.0f, 30.0f), emptyText, buttonTexture);
 
     buttons.insert(std::pair("sliderLine", sliderLine));
     buttons.insert(std::pair("slider", slider));
     
 
     //third line: Back to manu button
-    sf::Text backText(font, "Back to menu");
-    Button backToMenu(sf::Vector2f(300.0f, 452.0f), sf::Vector2f(200, 100), backText);
+    sf::Text backText(font, "Back to menu", 20U);
+    Button backToMenu(sf::Vector2f(300.0f, 452.0f), sf::Vector2f(200, 100), backText, buttonTexture);
 
     buttons.insert(std::pair("backToMenu", backToMenu));
 
@@ -174,14 +174,14 @@ std::unordered_map<std::string, Button> setUpSettingsMenu(const sf::Font& font) 
 
 }
 
-std::vector<Button> setUpExit(const sf::Font& font) {
+std::vector<Button> setUpExit(const sf::Font& font,sf::Texture* buttonTexture) {
     std::vector<Button> buttons;
-    sf::Text text(font, "Are you sure?");
-    Button areYouSure(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200.0f, 100.0f), text);
+    sf::Text text(font, "Are you sure?", 20U);
+    Button areYouSure(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200.0f, 100.0f), text, buttonTexture);
     text.setString("Yes");
-    Button yesButton(sf::Vector2f(300.0f + 40.0f, 370.0f), sf::Vector2f(50.0f, 50.0f), text);
+    Button yesButton(sf::Vector2f(300.0f + 40.0f, 370.0f), sf::Vector2f(50.0f, 50.0f), text, buttonTexture);
     text.setString("No");
-    Button noButton(sf::Vector2f(300.0f + 110.0f, 370.0f), sf::Vector2f(50.0f, 50.0f), text);
+    Button noButton(sf::Vector2f(300.0f + 110.0f, 370.0f), sf::Vector2f(50.0f, 50.0f), text, buttonTexture);
 
     buttons.push_back(areYouSure);
     buttons.push_back(yesButton);
@@ -189,12 +189,12 @@ std::vector<Button> setUpExit(const sf::Font& font) {
     return buttons;
 }
 
-std::vector<Button> setUpRestart(const sf::Font& font) {
+std::vector<Button> setUpRestart(const sf::Font& font, sf::Texture* buttonTexture) {
     std::vector<Button> buttons;
     sf::Text text(font, "Restart");
-    Button restart(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200.0f, 100.0f), text);
+    Button restart(sf::Vector2f(300.0f, 250.0f), sf::Vector2f(200.0f, 100.0f), text, buttonTexture);
     text.setString("Menu");
-    Button menu(sf::Vector2f(300.0f, 351.0f), sf::Vector2f(200.0f, 100.0f), text);
+    Button menu(sf::Vector2f(300.0f, 351.0f), sf::Vector2f(200.0f, 100.0f), text, buttonTexture);
 
     buttons.push_back(restart);
     buttons.push_back(menu);
@@ -206,13 +206,13 @@ int main()
 {
 
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(800, 600)), "Flying Pig", sf::Style::Resize | sf::Style::Close, sf::State::Windowed);
-    window.setPosition(sf::Vector2i(600 + 1920, 100));
+    //window.setPosition(sf::Vector2i(600 + 1920, 100));
     sf::FloatRect rect(sf::Vector2f(0.0f, 0.0f), sf::Vector2f(800.0f, 600.0f));
     sf::View view(rect);
     
 
     sf::Font font;
-    if (!font.openFromFile("Anton-Regular.ttf")) {
+    if (!font.openFromFile("Pixar.ttf")) {
         return -1;
     }
 
@@ -222,10 +222,14 @@ int main()
     std::vector<Button> buttonsRestart;
     bool closeIf;
     bool restartIf;
-    buttonsMainMenu = setUpMainMenu(font);
-    buttonsSettingsMenu = setUpSettingsMenu(font);
-    buttonsExit = setUpExit(font);
-    buttonsRestart = setUpRestart(font);
+    sf::Texture buttonMenuTexture;
+    if (!buttonMenuTexture.loadFromFile("buttonTexture2.png")) {
+        return -1;
+    }
+    buttonsMainMenu = setUpMainMenu(font, &buttonMenuTexture);
+    buttonsSettingsMenu = setUpSettingsMenu(font, &buttonMenuTexture);
+    buttonsExit = setUpExit(font, &buttonMenuTexture);
+    buttonsRestart = setUpRestart(font, &buttonMenuTexture);
 
     sf::Texture playerTexture;
     if (!playerTexture.loadFromFile("pigScale.png")) {
@@ -267,7 +271,8 @@ int main()
    Pipe newPipe = Pipe::generatedPipe(100.0f,&pipeTopTexture,&pipeBottomTexture);
 
    Game game(&playerTexture, sf::Vector2u(4, 1), 0.1f, sf::Vector2f(100.0f, 100.0f), sf::Vector2f(100.0f, 300.0f - 50.0f), 50.0f,
-       newPipe.getBodyTop().getSize(), newPipe.getBodyBottom().getSize(), 100.0f, &pipeTopTexture, &pipeBottomTexture, false);
+       newPipe.getBodyTop().getSize(), newPipe.getBodyBottom().getSize(), 100.0f, &pipeTopTexture, &pipeBottomTexture, false
+       ,sf::Vector2f(800.0f-150.0f,0.0f), sf::Vector2f(100.0f, 70.0f), sf::Text(font, "Score: 0", 20U), &buttonMenuTexture);
 
    float deltaTime = 0.0f;
    sf::Clock clock;
@@ -389,6 +394,7 @@ int main()
         else if (windowName == Settings) {
 
             window.clear();
+            window.draw(backgroundSprite);
             sf::Text music(font, "Music");
             music.setPosition(sf::Vector2f(300.0f, 250.0f));
             window.draw(music);
@@ -405,6 +411,7 @@ int main()
         }
         else if (windowName == Exit) {
             window.clear();
+            window.draw(backgroundSprite);
             for (Button button : buttonsExit) {
                 button.Draw(window);
             }

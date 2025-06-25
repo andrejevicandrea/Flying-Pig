@@ -8,7 +8,7 @@ public:
 
 
 	Button() = default;
-	Button(const sf::Vector2f& position, const sf::Vector2f& dimensions, const sf::Text& text);
+	Button(const sf::Vector2f& position, const sf::Vector2f& dimensions, const sf::Text& text,sf::Texture* texture);
 	void CenterText();
 	sf::Vector2f GetPosition() const { return framework.getPosition(); }
 	sf::Vector2f GetSize() const { return framework.getSize(); }

@@ -1,12 +1,12 @@
 #include "Button.h"
 
 
-Button::Button(const sf::Vector2f& position, const sf::Vector2f& dimensions,const sf::Text& text) : text(text)
+Button::Button(const sf::Vector2f& position, const sf::Vector2f& dimensions,const sf::Text& text,sf::Texture* texture) : text(text)
 {
 	this->framework.setPosition(position);
 	this->framework.setSize(dimensions);
-	this->text.setFillColor(sf::Color::Black);
-	
+	this->text.setFillColor(sf::Color::White);
+	this->framework.setTexture(texture);
 	CenterText();
 	
 	
