@@ -1,14 +1,19 @@
 #include "Game.h"
 
-Game::Game(sf::Texture* texture, sf::Vector2u imageCount, float switchTime, sf::Vector2f size, sf::Vector2f position, float maxJump, 
+Game::Game(sf::Texture* texture, sf::Vector2u imageCount, float switchTime, sf::Vector2f size, sf::Vector2f position, float maxJump,
 	const sf::Vector2f& sizeTop, const sf::Vector2f& sizeBottom, float speed, sf::Texture* pipeTopTexture, sf::Texture* pipeBottomTexture,
-	bool endGame) :
+	bool endGame
+	,const sf::Vector2f& positionButton, const sf::Vector2f& dimensions, const sf::Text& text, sf::Texture* textureButton) :
 	player(texture, imageCount, switchTime, size, position, maxJump)
-{
+	, scoreButton(positionButton, dimensions, text, textureButton)
+	
+{   
 	this->endGame = endGame;
 	this->pipeTopTexture = pipeTopTexture;
 	this->pipeBottomTexture = pipeBottomTexture;
 	pipes.push_back(Pipe(sizeTop, sizeBottom, speed, pipeTopTexture, pipeBottomTexture));
+	score = 0;
+	addedScore = true;
 }
 
 void Game::Update(sf::RenderWindow& window,float deltaTime, unsigned int row, bool gameStarted)
@@ -28,8 +33,19 @@ void Game::Update(sf::RenderWindow& window,float deltaTime, unsigned int row, bo
 		endGame = true;
 		return;
 	}
+
+	if (pipe.getBodyTop().getPosition().x + 100.0f < player.getBody().getPosition().x) {
+		if (addedScore) {
+			score++;
+			addedScore = false;
+		}
+			
+		scoreButton.SetText("Score: " + std::to_string(score));
+	}
+
  	if (pipe.getBodyTop().getPosition().x  < -100.0f) {
 		pipes.pop_front();
+		addedScore = true;
 	}
 
 	if (pipes.back().getBodyTop().getPosition().x < 400.0f) {
@@ -47,6 +63,8 @@ void Game::Update(sf::RenderWindow& window,float deltaTime, unsigned int row, bo
 		p.Update(deltaTime);
 		p.Draw(window);
 	}
+
+	scoreButton.Draw(window);
 
 	return;
 	
